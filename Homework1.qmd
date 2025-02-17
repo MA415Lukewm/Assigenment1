@@ -1,0 +1,16 @@
+---
+title: "Homework_Assigenment1"
+author: "Luke Mager"
+format: html
+editor: visual
+---
+
+##Vectors##
+
+![](/Users/lukem/Documents/vectorp5.png)
+```{r}
+vlabel = paste("Label", 1:30)
+vlabel
+vfn = paste0("fn", 1:30)
+vfn
+```
