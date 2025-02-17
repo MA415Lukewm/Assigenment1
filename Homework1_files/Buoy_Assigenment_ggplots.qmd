@@ -64,7 +64,7 @@ combined_data1 <- combined_data1 %>%
 combined_data1 <- combined_data1 %>%
   select(-TIDE, -TIDE.1, -mm,- WDIR, -PRES,-`#YY`,-YY)
 
-combined_data1$datetime <- ymd_h(paste(combined_data1$YYYY, combined_data$MM, combined_data1$DD, combined_data1$hh, sep = "-"))
+combined_data1$datetime <- ymd_h(paste(combined_data1$YYYY, combined_data1$MM, combined_data1$DD, combined_data1$hh, sep = "-"))
 
 combined_data1 <- combined_data1 %>%
   mutate(across(everything(), 
@@ -73,11 +73,69 @@ combined_data1 <- combined_data1 %>%
                 na_if(9999)))
 
 #summary(combined_data)
-#str(combined_data)
+#3str(combined_data)
 #str(combined_data$datetime)
 if (!inherits(combined_data1$datetime, "POSIXct")) {
   combined_data1$datetime <- ymd_h(paste(combined_data1$YYYY, combined_data1$MM, combined_data1$DD, combined_data1$hh, sep = "-"))
 }
+```
+
+```{r}
+str(combined_data1)
+write.csv(combined_data1, "buoy_data.csv", row.names = FALSE)
+df = read.csv("buoy_data.csv")
+
+```
+
+```{r}
+ggplot(df, aes(x = datetime, y = WSPD)) +
+  geom_line(color = "blue", size = 1) +
+  labs(title = "Wind Speed Over Time", x = "Date & Time", y = "Wind Speed (knots)") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(df, aes(x = WVHT)) +
+  geom_histogram(binwidth = 0.5, fill = "purple", color = "black", alpha = 0.7) +
+  labs(title = "Wave Height Distribution", x = "Wave Height (m)", y = "Count") +
+  theme_minimal()
+
+```
+
+```{r}
+#esquisse::esquisser()
+library(ggplot2)
+
+ggplot(df) +
+ aes(x = WSPD, y = WVHT, colour = MM) +
+ geom_point() +
+ scale_color_gradient() +
+ theme_minimal()
+
+ggplot(df) +
+ aes(x = WSPD, y = WVHT, colour = ATMP) +
+ geom_point() +
+ scale_color_gradient() +
+ ggthemes::theme_economist()
+
+ggplot(df) +
+ aes(x = ATMP, y = WVHT) +
+ geom_point(colour = "#112446") +
+ ggthemes::theme_economist()
+
+ggplot(df) +
+ aes(x = ATMP, y = DEWP) +
+ geom_point(colour = "#112446") +
+ ggthemes::theme_economist()
+
+ggplot(df) +
+ aes(x = VIS, group = hh) +
+ geom_histogram(bins = 30L, fill = "#112446") +
+ ggthemes::theme_economist()
+
+library(data.table)
+df <- fread("buoy_data.csv")
+esquisser(df)
 ```
 
 The `echo: false` option disables the printing of code (only output is displayed).
