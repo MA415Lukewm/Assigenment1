@@ -1,0 +1,83 @@
+---
+title: "Buoy_Assigenment"
+author: "Luke"
+format: html
+editor: visual
+---
+
+```{r, warning = FALSE}
+library(data.table)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(tibble)
+library(readr)
+library(esquisse)
+```
+
+You can add options to executable code like this
+
+```{r, warning=FALSE, message=FALSE}
+file_root <- "https://www.ndbc.noaa.gov/view_text_file.php?filename=44013h"
+tail <- ".txt.gz&dir=data/historical/stdmet/"
+
+load_buoy_data1 <- function(year) {
+  path <- paste0(file_root, year, tail)
+  
+  
+  if (year < 2007) {
+  header <- scan(path, what = 'character', nlines = 1)
+  buoy <- read.table(path, fill = TRUE, header = TRUE, sep = "")
+  buoy <- add_column(buoy, mm = NA, .after = "hh")
+  buoy <- add_column(buoy, TIDE = NA, .after = "VIS")
+    
+  } else {
+  header <- scan(path, what = 'character', nlines = 1)  
+  buoy <- fread(path, header = FALSE, skip = 1, fill = TRUE)
+
+    setnames(buoy, header)
+  }
+  
+  #return(buoy)
+}
+
+all_data1 <- lapply(1985:2024, load_buoy_data1)
+
+combined_data1 <- rbindlist(all_data1, fill = TRUE)
+```
+
+```{r}
+combined_data1 <- combined_data1 %>%
+  mutate(
+    YY = as.character(YY),
+    `#YY` = as.character(`#YY`),
+    YYYY = as.character(YYYY)
+  )
+
+# Combine year columns safely using coalesce
+combined_data1 <- combined_data1 %>%
+  mutate(YYYY = coalesce(YYYY, `#YY`, YY))
+combined_data1 <- combined_data1 %>%
+  mutate(BAR = coalesce(as.numeric(BAR), as.numeric(PRES)),  # Convert BAR and PRES to numeric
+    WD = coalesce(as.numeric(WD), as.numeric(WDIR)))
+
+combined_data1 <- combined_data1 %>%
+  select(-TIDE, -TIDE.1, -mm,- WDIR, -PRES,-`#YY`,-YY)
+
+combined_data1$datetime <- ymd_h(paste(combined_data1$YYYY, combined_data$MM, combined_data1$DD, combined_data1$hh, sep = "-"))
+
+combined_data1 <- combined_data1 %>%
+  mutate(across(everything(), 
+                ~ na_if(as.numeric(as.character(.)), 99) %>%
+                na_if(999) %>%
+                na_if(9999)))
+
+#summary(combined_data)
+#str(combined_data)
+#str(combined_data$datetime)
+if (!inherits(combined_data1$datetime, "POSIXct")) {
+  combined_data1$datetime <- ymd_h(paste(combined_data1$YYYY, combined_data1$MM, combined_data1$DD, combined_data1$hh, sep = "-"))
+}
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
