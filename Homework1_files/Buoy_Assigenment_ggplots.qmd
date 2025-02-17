@@ -135,7 +135,7 @@ ggplot(df) +
 
 library(data.table)
 df <- fread("buoy_data.csv")
-esquisser(df)
+#esquisser(df)
 ```
 
 The `echo: false` option disables the printing of code (only output is displayed).
